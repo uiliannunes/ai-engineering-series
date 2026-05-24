@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LangChain na Prática — Série Engenharia de IA #1</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --surface: #141720;
+      --surface2: #1b1f2e;
+      --border: #252a3a;
+      --green: #3dd68c;
+      --green-dim: #1a3d2e;
+      --blue: #4d9fff;
+      --blue-dim: #132140;
+      --yellow: #f5c842;
+      --yellow-dim: #2e2500;
+      --red: #ff6b6b;
+      --purple: #b07fff;
+      --text: #e2e8f0;
+      --text-muted: #6b7a99;
+      --text-dim: #94a3b8;
+      --code-bg: #0a0c10;
+      --tag-bg: #1e2535;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #0d0f14 0%, #111827 50%, #0d1117 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: -80px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(61,214,140,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; right: 10%;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(77,159,255,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .series-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-dim);
+      border: 1px solid rgba(61,214,140,0.3);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .series-badge::before { content: '●'; font-size: 8px; }
+
+    .header h1 {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+      color: #fff;
+    }
+    .header h1 .emoji { margin-right: 6px; }
+
+    .header-sub {
+      font-size: 15px;
+      color: var(--text-dim);
+      font-weight: 300;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .learn-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pill {
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Notebook body */
+    .notebook {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    /* Cell */
+    .cell {
+      display: flex;
+      gap: 0;
+      margin-bottom: 6px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .cell:nth-child(1) { animation-delay: 0.05s; }
+    .cell:nth-child(2) { animation-delay: 0.1s; }
+    .cell:nth-child(3) { animation-delay: 0.15s; }
+    .cell:nth-child(4) { animation-delay: 0.2s; }
+    .cell:nth-child(5) { animation-delay: 0.25s; }
+    .cell:nth-child(6) { animation-delay: 0.3s; }
+    .cell:nth-child(7) { animation-delay: 0.35s; }
+    .cell:nth-child(8) { animation-delay: 0.4s; }
+    .cell:nth-child(9) { animation-delay: 0.45s; }
+    .cell:nth-child(10) { animation-delay: 0.5s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .cell-gutter {
+      width: 40px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 14px;
+      gap: 4px;
+    }
+    .cell-type-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .cell.md .cell-type-dot { background: var(--blue); }
+    .cell.code .cell-type-dot { background: var(--green); }
+
+    .cell-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .cell-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Markdown cell */
+    .md-content {
+      padding: 18px 20px;
+      border-radius: 8px;
+      line-height: 1.75;
+    }
+    .cell.md .md-content {
+      background: transparent;
+    }
+
+    .md-content h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .md-content h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--blue);
+      margin: 14px 0 8px;
+    }
+    .md-content p {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .md-content strong { color: var(--text); font-weight: 600; }
+    .md-content code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      color: var(--purple);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .md-content ul, .md-content ol {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+    .md-content li {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .md-content li::marker { color: var(--green); }
+
+    .md-content blockquote {
+      border-left: 3px solid var(--yellow);
+      background: var(--yellow-dim);
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin: 12px 0;
+      font-size: 13px;
+      color: var(--yellow);
+    }
+
+    .comparison-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      margin: 12px 0;
+    }
+    .comparison-box .bad  { color: var(--red); }
+    .comparison-box .good { color: var(--green); }
+    .comparison-box .label { color: var(--text-muted); }
+
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--blue-dim);
+      border: 1px solid rgba(77,159,255,0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .pipeline-flow .step {
+      background: rgba(77,159,255,0.15);
+      border: 1px solid rgba(77,159,255,0.3);
+      color: var(--blue);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .pipeline-flow .arrow { color: var(--text-muted); font-size: 14px; }
+
+    /* Code cell */
+    .code-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .code-cell:hover { border-color: rgba(61,214,140,0.3); }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .code-lang {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+    .code-dots span {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .code-dots span:nth-child(1) { background: #ff5f56; }
+    .code-dots span:nth-child(2) { background: #ffbd2e; }
+    .code-dots span:nth-child(3) { background: #27c93f; }
+
+    pre {
+      padding: 18px 20px;
+      overflow-x: auto;
+      background: var(--code-bg);
+    }
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    /* Syntax highlight */
+    .kw  { color: #ff79c6; }  /* keyword */
+    .fn  { color: #50fa7b; }  /* function */
+    .st  { color: #f1fa8c; }  /* string */
+    .cm  { color: #6272a4; font-style: italic; } /* comment */
+    .nb  { color: #8be9fd; }  /* number / builtin */
+    .cl  { color: #ffb86c; }  /* class */
+    .op  { color: #ff79c6; }  /* operator */
+    .sh  { color: var(--yellow); } /* shell */
+
+    /* Table */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 14px 0;
+    }
+    .summary-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+      vertical-align: top;
+    }
+    .summary-table td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--purple);
+      white-space: nowrap;
+    }
+    .summary-table tr:last-child td { border-bottom: none; }
+    .summary-table tr:hover td { background: var(--surface2); }
+
+    /* Next post CTA */
+    .next-card {
+      margin-top: 40px;
+      background: linear-gradient(135deg, var(--green-dim), var(--blue-dim));
+      border: 1px solid rgba(61,214,140,0.25);
+      border-radius: 12px;
+      padding: 28px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .next-card-text h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .next-card-text p {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .next-badge {
+      background: var(--green);
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 6px 0;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    @media (max-width: 600px) {
+      .notebook { padding: 24px 16px 60px; }
+      .header-inner { padding: 0 16px; }
+      .cell-gutter { width: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="series-badge">Engenharia de IA · Post #1</div>
+    <h1><span class="emoji">🦜🔗</span>LangChain na Prática</h1>
+    <p class="header-sub">Seu Primeiro Prompt Template — do zero ao pipeline funcional</p>
+    <div class="learn-pills">
+      <span class="pill">PromptTemplate</span>
+      <span class="pill">ChatOpenAI</span>
+      <span class="pill">LLMChain</span>
+      <span class="pill">chain.invoke()</span>
+    </div>
+  </div>
+</div>
+
+<!-- Notebook -->
+<div class="notebook">
+
+  <!-- Cell 1: O que é LangChain -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h2>🤔 O que é LangChain?</h2>
+        <p><strong>LangChain</strong> é um framework Python que facilita a criação de aplicações com LLMs (Large Language Models), como GPT, Claude ou Gemini.</p>
+        <p>Em vez de montar chamadas de API na mão e gerenciar strings de prompt manualmente, o LangChain organiza tudo em <strong>blocos reutilizáveis e encadeáveis</strong>.</p>
+        <div class="comparison-box">
+          <div class="bad">❌ Sem LangChain: &nbsp;prompt (string) → chamada API → parse da resposta &nbsp;<span class="label">trabalhoso</span></div>
+          <br>
+          <div class="good">✅ Com LangChain: &nbsp;PromptTemplate → LLM → OutputParser &nbsp;<span class="label">organizado</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Cell 2: Instalação (md) -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h2>📦 Passo 1 — Instalação</h2>
+        <p>Instale as bibliotecas necessárias. O <code>langchain-openai</code> é o pacote de integração com os modelos da OpenAI.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell 3: Instalação (code) -->
+  <div class="cell code">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+      <div class="cell-number">[1]</div>
+    </div>
+    <div class="cell-body">
+      <div class="code-cell">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <div class="code-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><code><span class="sh">!pip install langchain langchain-openai --quiet</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Cell 4: API Key (md) -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h2>🔑 Passo 2 — Configurar a Chave de API</h2>
+        <p>Você precisa de uma chave da OpenAI. Crie a sua em: <strong>platform.openai.com/api-keys</strong></p>
+        <blockquote>⚠️ <strong>Nunca exponha sua chave em código público!</strong> Use variáveis de ambiente.</blockquote>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell 5: API Key (code) -->
+  <div class="cell code">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+      <div class="cell-number">[2]</div>
+    </div>
+    <div class="cell-body">
+      <div class="code-cell">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><code><span class="kw">import</span> os
+
+<span class="cm"># Substitua pela sua chave — ou defina via variável de ambiente</span>
+os.<span class="fn">environ</span>[<span class="st">"OPENAI_API_KEY"</span>] = <span class="st">"sua-chave-aqui"</span>
+
+<span class="fn">print</span>(<span class="st">"✅ Chave configurada com sucesso!"</span>)</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Cell 6: PromptTemplate (md) -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h2>✍️ Passo 3 — Criando o PromptTemplate</h2>
+        <p>O <code>PromptTemplate</code> permite criar prompts com <strong>variáveis dinâmicas</strong> usando <code>{nome_da_variavel}</code>.</p>
+        <p>Isso é muito útil quando você quer reutilizar o mesmo prompt com entradas diferentes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell 7: PromptTemplate (code) -->
+  <div class="cell code">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+      <div class="cell-number">[3]</div>
+    </div>
+    <div class="cell-body">
+      <div class="code-cell">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> langchain.prompts <span class="kw">import</span> <span class="cl">PromptTemplate</span>
+
+<span class="cm"># Definindo o template com uma variável {produto}</span>
+template = <span class="cl">PromptTemplate</span>(
+    input_variables=[<span class="st">"produto"</span>],
+    template=<span class="st">"Escreva um slogan criativo para o produto: {produto}"</span>
+)
+
+<span class="cm"># Visualizando o prompt formatado antes de enviar ao modelo</span>
+prompt_formatado = template.<span class="fn">format</span>(produto=<span class="st">"tênis esportivo"</span>)
+<span class="fn">print</span>(<span class="st">"📝 Prompt gerado:"</span>)
+<span class="fn">print</span>(prompt_formatado)</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell 8: Multi-var tip -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h3>💡 Dica: Templates com múltiplas variáveis</h3>
+        <p>Você pode ter quantas variáveis quiser no mesmo template:</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cell code">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+      <div class="cell-number">[4]</div>
+    </div>
+    <div class="cell-body">
+      <div class="code-cell">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><code>template_avancado = <span class="cl">PromptTemplate</span>(
+    input_variables=[<span class="st">"produto"</span>, <span class="st">"publico"</span>, <span class="st">"tom"</span>],
+    template=<span class="st">"""
+Você é um especialista em marketing.
+Crie um slogan para o produto: {produto}
+Público-alvo: {publico}
+Tom de comunicação: {tom}
+"""</span>
+)
+
+<span class="fn">print</span>(template_avancado.<span class="fn">format</span>(
+    produto=<span class="st">"tênis esportivo"</span>,
+    publico=<span class="st">"jovens entre 18 e 30 anos"</span>,
+    tom=<span class="st">"energético e motivacional"</span>
+))</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Cell: LLM (md) -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h2>🤖 Passo 4 — Conectando ao Modelo e Executando</h2>
+        <p>Agora vamos conectar o template ao modelo GPT e criar nosso primeiro <strong>pipeline completo</strong>.</p>
+        <div class="pipeline-flow">
+          <span class="step">PromptTemplate</span>
+          <span class="arrow">→</span>
+          <span class="step">ChatOpenAI</span>
+          <span class="arrow">→</span>
+          <span class="step">Resposta</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell: LLM (code) -->
+  <div class="cell code">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+      <div class="cell-number">[5]</div>
+    </div>
+    <div class="cell-body">
+      <div class="code-cell">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> <span class="cl">ChatOpenAI</span>
+<span class="kw">from</span> langchain.chains <span class="kw">import</span> <span class="cl">LLMChain</span>
+
+<span class="cm"># Inicializa o modelo</span>
+llm = <span class="cl">ChatOpenAI</span>(
+    model=<span class="st">"gpt-4o-mini"</span>,  <span class="cm"># modelo mais econômico e eficiente</span>
+    temperature=<span class="nb">0.7</span>        <span class="cm"># 0 = determinístico | 1 = mais criativo</span>
+)
+
+<span class="cm"># Conecta o template ao modelo em uma chain</span>
+chain = <span class="cl">LLMChain</span>(llm=llm, prompt=template)
+
+<span class="cm"># Executa o pipeline</span>
+resposta = chain.<span class="fn">invoke</span>({<span class="st">"produto"</span>: <span class="st">"tênis esportivo"</span>})
+
+<span class="fn">print</span>(<span class="st">"🎯 Resposta do modelo:"</span>)
+<span class="fn">print</span>(resposta[<span class="st">"text"</span>])</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Cell: Loop (md) -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h2>🔄 Passo 5 — Testando com múltiplos inputs</h2>
+        <p>A reutilização é uma das grandes vantagens do PromptTemplate. Veja como gerar slogans para vários produtos com o mesmo pipeline:</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cell: Loop (code) -->
+  <div class="cell code">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+      <div class="cell-number">[6]</div>
+    </div>
+    <div class="cell-body">
+      <div class="code-cell">
+        <div class="code-header">
+          <span class="code-lang">python</span>
+          <div class="code-dots"><span></span><span></span><span></span></div>
+        </div>
+        <pre><code>produtos = [
+    <span class="st">"notebook gamer"</span>,
+    <span class="st">"café especial artesanal"</span>,
+    <span class="st">"aplicativo de meditação"</span>
+]
+
+<span class="fn">print</span>(<span class="st">"🚀 Gerando slogans...\n"</span>)
+<span class="kw">for</span> produto <span class="kw">in</span> produtos:
+    resposta = chain.<span class="fn">invoke</span>({<span class="st">"produto"</span>: produto})
+    <span class="fn">print</span>(<span class="nb">f</span><span class="st">"📦 {produto.upper()}"</span>)
+    <span class="fn">print</span>(<span class="nb">f</span><span class="st">"   → {resposta['text'].strip()}"</span>)
+    <span class="fn">print</span>()</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Summary -->
+  <div class="cell md">
+    <div class="cell-gutter">
+      <div class="cell-type-dot"></div>
+    </div>
+    <div class="cell-body">
+      <div class="md-content">
+        <h2>✅ Resumo do que você aprendeu</h2>
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Conceito</th>
+              <th>O que é</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PromptTemplate</td>
+              <td>Cria prompts dinâmicos com variáveis reutilizáveis</td>
+            </tr>
+            <tr>
+              <td>ChatOpenAI</td>
+              <td>Conector para os modelos GPT da OpenAI</td>
+            </tr>
+            <tr>
+              <td>LLMChain</td>
+              <td>Encadeia um template + modelo em um pipeline</td>
+            </tr>
+            <tr>
+              <td>chain.invoke()</td>
+              <td>Executa o pipeline com os inputs fornecidos</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next post CTA -->
+  <div class="next-card">
+    <div class="next-card-text">
+      <h3>🚀 Próximo post da série</h3>
+      <p>Sequential Chains — encadeie múltiplos prompts onde a saída de um vira a entrada do próximo.</p>
+    </div>
+    <div class="next-badge">POST #2 EM BREVE</div>
+  </div>
+
+</div>
+
+</body>
+</html>
