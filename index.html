@@ -7,601 +7,305 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #0d0f14;
-      --surface: #141720;
-      --surface2: #1b1f2e;
-      --border: #252a3a;
-      --green: #3dd68c;
-      --green-dim: #1a3d2e;
-      --blue: #4d9fff;
-      --blue-dim: #132140;
-      --yellow: #f5c842;
-      --yellow-dim: #2e2500;
-      --red: #ff6b6b;
-      --purple: #b07fff;
-      --text: #e2e8f0;
-      --text-muted: #6b7a99;
-      --text-dim: #94a3b8;
-      --code-bg: #0a0c10;
-      --tag-bg: #1e2535;
+      --bg:#0d0f14;--surface:#141720;--surface2:#1b1f2e;--border:#252a3a;
+      --green:#3dd68c;--green-dim:#1a3d2e;--blue:#4d9fff;--blue-dim:#132140;
+      --yellow:#f5c842;--yellow-dim:#2e2500;--red:#ff6b6b;--purple:#b07fff;
+      --text:#e2e8f0;--text-muted:#6b7a99;--text-dim:#94a3b8;
+      --code-bg:#0a0c10;--tag-bg:#1e2535;--sidebar-w:260px;
     }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    .header{background:linear-gradient(135deg,#0d0f14 0%,#111827 50%,#0d1117 100%);border-bottom:1px solid var(--border);padding:44px 0 36px;position:relative;overflow:hidden}
+    .header::before{content:'';position:absolute;top:-80px;left:-80px;width:320px;height:320px;background:radial-gradient(circle,rgba(61,214,140,.08) 0%,transparent 70%)}
+    .header::after{content:'';position:absolute;bottom:-60px;right:10%;width:280px;height:280px;background:radial-gradient(circle,rgba(77,159,255,.07) 0%,transparent 70%)}
+    .header-inner{max-width:1160px;margin:0 auto;padding:0 32px;position:relative;z-index:1}
+    .series-badge{display:inline-flex;align-items:center;gap:8px;background:var(--green-dim);border:1px solid rgba(61,214,140,.3);color:var(--green);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:18px}
+    .series-badge::before{content:'●';font-size:8px}
+    .header h1{font-size:clamp(22px,4vw,34px);font-weight:700;line-height:1.2;letter-spacing:-.02em;margin-bottom:12px;color:#fff}
+    .header-sub{font-size:14px;color:var(--text-dim);font-weight:300;margin-bottom:24px}
+    .learn-pills{display:flex;flex-wrap:wrap;gap:8px}
+    .pill{background:var(--tag-bg);border:1px solid var(--border);color:var(--text-dim);font-size:11px;padding:3px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace}
 
-    body {
-      font-family: 'Sora', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 0;
-    }
+    .layout{display:flex;flex:1;max-width:1160px;margin:0 auto;width:100%;padding:0 32px;gap:32px;align-items:flex-start}
 
-    /* Header */
-    .header {
-      background: linear-gradient(135deg, #0d0f14 0%, #111827 50%, #0d1117 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 48px 0 40px;
-      position: relative;
-      overflow: hidden;
-    }
-    .header::before {
-      content: '';
-      position: absolute;
-      top: -80px; left: -80px;
-      width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(61,214,140,0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .header::after {
-      content: '';
-      position: absolute;
-      bottom: -60px; right: 10%;
-      width: 280px; height: 280px;
-      background: radial-gradient(circle, rgba(77,159,255,0.07) 0%, transparent 70%);
-      pointer-events: none;
-    }
+    .sidebar{width:var(--sidebar-w);flex-shrink:0;position:sticky;top:24px;margin-top:32px;margin-bottom:32px}
+    .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .sidebar-title{padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:8px}
+    .sidebar-title span{color:var(--blue);font-size:14px}
+    .file-tree{padding:12px 0}
+    .tree-item{display:flex;align-items:center;gap:10px;padding:8px 16px;transition:background .15s;font-size:12px}
+    .tree-item:hover{background:var(--surface2)}
+    .tree-item .icon{font-size:14px;flex-shrink:0}
+    .tree-item .fname{color:var(--text-dim);font-family:'JetBrains Mono',monospace;flex:1;font-size:11px}
+    .badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em}
+    .badge-nb{background:rgba(245,200,66,.15);color:var(--yellow);border:1px solid rgba(245,200,66,.3)}
+    .badge-txt{background:rgba(77,159,255,.15);color:var(--blue);border:1px solid rgba(77,159,255,.3)}
+    .badge-env{background:rgba(255,107,107,.15);color:var(--red);border:1px solid rgba(255,107,107,.3)}
+    .badge-doc{background:rgba(61,214,140,.15);color:var(--green);border:1px solid rgba(61,214,140,.3)}
+    .sidebar-divider{height:1px;background:var(--border);margin:4px 0}
+    .download-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 14px 0;background:var(--green);color:#000;font-size:12px;font-weight:700;letter-spacing:.04em;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;width:calc(100% - 28px);transition:opacity .2s,transform .1s;text-decoration:none}
+    .download-btn:hover{opacity:.88;transform:translateY(-1px)}
+    .github-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 14px 0;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);font-size:12px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;width:calc(100% - 28px);transition:all .2s;text-decoration:none}
+    .github-btn:hover{border-color:var(--blue);color:var(--blue)}
+    .sidebar-meta{padding:14px 16px}
+    .meta-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)}
+    .meta-row:last-child{border-bottom:none}
+    .meta-label{font-size:11px;color:var(--text-muted)}
+    .meta-val{font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+    .meta-val a{color:var(--blue);text-decoration:none}
+    .meta-val a:hover{text-decoration:underline}
 
-    .header-inner {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 0 32px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .series-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--green-dim);
-      border: 1px solid rgba(61,214,140,0.3);
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
-    .series-badge::before { content: '●'; font-size: 8px; }
-
-    .header h1 {
-      font-size: clamp(24px, 4vw, 36px);
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      margin-bottom: 14px;
-      color: #fff;
-    }
-    .header h1 .emoji { margin-right: 6px; }
-
-    .header-sub {
-      font-size: 15px;
-      color: var(--text-dim);
-      font-weight: 300;
-      margin-bottom: 28px;
-      line-height: 1.6;
-    }
-
-    .learn-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .pill {
-      background: var(--tag-bg);
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-      font-size: 12px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Notebook body */
-    .notebook {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 40px 32px 80px;
-    }
-
-    /* Cell */
-    .cell {
-      display: flex;
-      gap: 0;
-      margin-bottom: 6px;
-      animation: fadeUp 0.4s ease both;
-    }
-    .cell:nth-child(1) { animation-delay: 0.05s; }
-    .cell:nth-child(2) { animation-delay: 0.1s; }
-    .cell:nth-child(3) { animation-delay: 0.15s; }
-    .cell:nth-child(4) { animation-delay: 0.2s; }
-    .cell:nth-child(5) { animation-delay: 0.25s; }
-    .cell:nth-child(6) { animation-delay: 0.3s; }
-    .cell:nth-child(7) { animation-delay: 0.35s; }
-    .cell:nth-child(8) { animation-delay: 0.4s; }
-    .cell:nth-child(9) { animation-delay: 0.45s; }
-    .cell:nth-child(10) { animation-delay: 0.5s; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .cell-gutter {
-      width: 40px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 14px;
-      gap: 4px;
-    }
-    .cell-type-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .cell.md .cell-type-dot { background: var(--blue); }
-    .cell.code .cell-type-dot { background: var(--green); }
-
-    .cell-number {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .cell-body {
-      flex: 1;
-      min-width: 0;
-    }
-
-    /* Markdown cell */
-    .md-content {
-      padding: 18px 20px;
-      border-radius: 8px;
-      line-height: 1.75;
-    }
-    .cell.md .md-content {
-      background: transparent;
-    }
-
-    .md-content h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .md-content h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--blue);
-      margin: 14px 0 8px;
-    }
-    .md-content p {
-      color: var(--text-dim);
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-    .md-content strong { color: var(--text); font-weight: 600; }
-    .md-content code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      background: var(--tag-bg);
-      border: 1px solid var(--border);
-      color: var(--purple);
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
-    .md-content ul, .md-content ol {
-      padding-left: 20px;
-      margin-bottom: 10px;
-    }
-    .md-content li {
-      color: var(--text-dim);
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-    .md-content li::marker { color: var(--green); }
-
-    .md-content blockquote {
-      border-left: 3px solid var(--yellow);
-      background: var(--yellow-dim);
-      padding: 10px 14px;
-      border-radius: 0 6px 6px 0;
-      margin: 12px 0;
-      font-size: 13px;
-      color: var(--yellow);
-    }
-
-    .comparison-box {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      margin: 12px 0;
-    }
-    .comparison-box .bad  { color: var(--red); }
-    .comparison-box .good { color: var(--green); }
-    .comparison-box .label { color: var(--text-muted); }
-
-    .pipeline-flow {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--blue-dim);
-      border: 1px solid rgba(77,159,255,0.2);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin: 12px 0;
-      flex-wrap: wrap;
-    }
-    .pipeline-flow .step {
-      background: rgba(77,159,255,0.15);
-      border: 1px solid rgba(77,159,255,0.3);
-      color: var(--blue);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-    .pipeline-flow .arrow { color: var(--text-muted); font-size: 14px; }
-
-    /* Code cell */
-    .code-cell {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      transition: border-color 0.2s;
-    }
-    .code-cell:hover { border-color: rgba(61,214,140,0.3); }
-
-    .code-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 14px;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-    }
-    .code-lang {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--green);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .code-dots {
-      display: flex;
-      gap: 5px;
-    }
-    .code-dots span {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-    }
-    .code-dots span:nth-child(1) { background: #ff5f56; }
-    .code-dots span:nth-child(2) { background: #ffbd2e; }
-    .code-dots span:nth-child(3) { background: #27c93f; }
-
-    pre {
-      padding: 18px 20px;
-      overflow-x: auto;
-      background: var(--code-bg);
-    }
-    pre code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--text);
-      background: none;
-      border: none;
-      padding: 0;
-    }
-
-    /* Syntax highlight */
-    .kw  { color: #ff79c6; }  /* keyword */
-    .fn  { color: #50fa7b; }  /* function */
-    .st  { color: #f1fa8c; }  /* string */
-    .cm  { color: #6272a4; font-style: italic; } /* comment */
-    .nb  { color: #8be9fd; }  /* number / builtin */
-    .cl  { color: #ffb86c; }  /* class */
-    .op  { color: #ff79c6; }  /* operator */
-    .sh  { color: var(--yellow); } /* shell */
-
-    /* Table */
-    .summary-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin: 14px 0;
-    }
-    .summary-table th {
-      text-align: left;
-      padding: 10px 14px;
-      background: var(--surface2);
-      color: var(--text-muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      border-bottom: 1px solid var(--border);
-    }
-    .summary-table td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-dim);
-      vertical-align: top;
-    }
-    .summary-table td:first-child {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--purple);
-      white-space: nowrap;
-    }
-    .summary-table tr:last-child td { border-bottom: none; }
-    .summary-table tr:hover td { background: var(--surface2); }
-
-    /* Next post CTA */
-    .next-card {
-      margin-top: 40px;
-      background: linear-gradient(135deg, var(--green-dim), var(--blue-dim));
-      border: 1px solid rgba(61,214,140,0.25);
-      border-radius: 12px;
-      padding: 28px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .next-card-text h3 {
-      font-size: 16px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-    .next-card-text p {
-      font-size: 13px;
-      color: var(--text-dim);
-    }
-    .next-badge {
-      background: var(--green);
-      color: #000;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 6px 16px;
-      border-radius: 20px;
-      white-space: nowrap;
-      letter-spacing: 0.05em;
-    }
-
-    /* Divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 6px 0;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-    @media (max-width: 600px) {
-      .notebook { padding: 24px 16px 60px; }
-      .header-inner { padding: 0 16px; }
-      .cell-gutter { width: 24px; }
+    .notebook{flex:1;min-width:0;padding:32px 0 80px}
+    .cell{display:flex;gap:0;margin-bottom:6px;animation:fadeUp .4s ease both}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .cell:nth-child(1){animation-delay:.05s}.cell:nth-child(2){animation-delay:.1s}
+    .cell:nth-child(3){animation-delay:.15s}.cell:nth-child(4){animation-delay:.2s}
+    .cell:nth-child(5){animation-delay:.25s}.cell:nth-child(6){animation-delay:.3s}
+    .cell:nth-child(7){animation-delay:.35s}.cell:nth-child(8){animation-delay:.4s}
+    .cell:nth-child(9){animation-delay:.45s}.cell:nth-child(10){animation-delay:.5s}
+    .cell-gutter{width:40px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:4px}
+    .cell-type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .cell.md .cell-type-dot{background:var(--blue)}
+    .cell.code .cell-type-dot{background:var(--green)}
+    .cell-number{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted)}
+    .cell-body{flex:1;min-width:0}
+    .md-content{padding:18px 20px;border-radius:8px;line-height:1.75}
+    .md-content h2{font-size:17px;font-weight:700;color:#fff;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    .md-content h3{font-size:14px;font-weight:600;color:var(--blue);margin:14px 0 8px}
+    .md-content p{color:var(--text-dim);font-size:13px;margin-bottom:10px}
+    .md-content strong{color:var(--text);font-weight:600}
+    .md-content code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--tag-bg);border:1px solid var(--border);color:var(--purple);padding:1px 6px;border-radius:4px}
+    .md-content ul{padding-left:20px;margin-bottom:10px}
+    .md-content li{color:var(--text-dim);font-size:13px;margin-bottom:4px}
+    .md-content li::marker{color:var(--green)}
+    .md-content blockquote{border-left:3px solid var(--yellow);background:var(--yellow-dim);padding:10px 14px;border-radius:0 6px 6px 0;margin:12px 0;font-size:12px;color:var(--yellow)}
+    .comparison-box{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;margin:12px 0}
+    .comparison-box .bad{color:var(--red)}
+    .comparison-box .good{color:var(--green)}
+    .comparison-box .label{color:var(--text-muted)}
+    .pipeline-flow{display:flex;align-items:center;gap:8px;background:var(--blue-dim);border:1px solid rgba(77,159,255,.2);border-radius:8px;padding:12px 16px;margin:12px 0;flex-wrap:wrap}
+    .pipeline-flow .step{background:rgba(77,159,255,.15);border:1px solid rgba(77,159,255,.3);color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 12px;border-radius:20px;font-weight:600}
+    .pipeline-flow .arrow{color:var(--text-muted);font-size:14px}
+    .groq-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(176,127,255,.1);border:1px solid rgba(176,127,255,.3);color:var(--purple);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;margin-left:8px}
+    .code-cell{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s}
+    .code-cell:hover{border-color:rgba(61,214,140,.3)}
+    .code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+    .code-lang{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.08em}
+    .code-dots{display:flex;gap:5px}
+    .code-dots span{width:10px;height:10px;border-radius:50%}
+    .code-dots span:nth-child(1){background:#ff5f56}
+    .code-dots span:nth-child(2){background:#ffbd2e}
+    .code-dots span:nth-child(3){background:#27c93f}
+    pre{padding:16px 20px;overflow-x:auto;background:var(--code-bg)}
+    pre code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:var(--text);background:none;border:none;padding:0}
+    .output-cell{background:#0d1117;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:12px 20px}
+    .output-cell pre{background:transparent;padding:0}
+    .output-cell pre code{font-size:11px;color:#7c8db5}
+    .out-label{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+    .kw{color:#ff79c6}.fn{color:#50fa7b}.st{color:#f1fa8c}
+    .cm{color:#6272a4;font-style:italic}.nb{color:#8be9fd}
+    .cl{color:#ffb86c}.op{color:#ff79c6}.sh{color:var(--yellow)}
+    .summary-table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0}
+    .summary-table th{text-align:left;padding:10px 14px;background:var(--surface2);color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)}
+    .summary-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:top}
+    .summary-table td:first-child{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--purple);white-space:nowrap}
+    .summary-table tr:last-child td{border-bottom:none}
+    .summary-table tr:hover td{background:var(--surface2)}
+    .next-card{margin-top:32px;background:linear-gradient(135deg,var(--green-dim),var(--blue-dim));border:1px solid rgba(61,214,140,.25);border-radius:12px;padding:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .next-card-text h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:5px}
+    .next-card-text p{font-size:12px;color:var(--text-dim)}
+    .next-badge{background:var(--green);color:#000;font-size:10px;font-weight:700;padding:6px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.05em}
+    .author-footer{margin-top:24px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:14px}
+    .author-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .author-info p{font-size:12px;color:var(--text-dim)}
+    .author-info a{color:var(--blue);text-decoration:none;font-size:12px}
+    .author-info a:hover{text-decoration:underline}
+    .author-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+    .divider{height:1px;background:var(--border);margin:6px 0}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+    @media(max-width:768px){
+      .layout{flex-direction:column;padding:0 16px}
+      .sidebar{width:100%;position:static;margin-top:24px}
+      .header-inner{padding:0 16px}
     }
   </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
   <div class="header-inner">
     <div class="series-badge">Engenharia de IA · Post #1</div>
-    <h1><span class="emoji">🦜🔗</span>LangChain na Prática</h1>
-    <p class="header-sub">Seu Primeiro Prompt Template — do zero ao pipeline funcional</p>
+    <h1>🦜🔗 LangChain na Prática</h1>
+    <p class="header-sub">Seu Primeiro Prompt Template — do zero ao pipeline funcional com Groq (API gratuita)</p>
     <div class="learn-pills">
       <span class="pill">PromptTemplate</span>
-      <span class="pill">ChatOpenAI</span>
-      <span class="pill">LLMChain</span>
+      <span class="pill">ChatGroq</span>
+      <span class="pill">LCEL pipeline</span>
+      <span class="pill">llama-3.1-8b</span>
       <span class="pill">chain.invoke()</span>
     </div>
   </div>
 </div>
 
-<!-- Notebook -->
-<div class="notebook">
+<div class="layout">
 
-  <!-- Cell 1: O que é LangChain -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title"><span>📁</span> Estrutura do Projeto</div>
+      <div class="file-tree">
+        <div class="tree-item">
+          <span class="icon">📓</span>
+          <span class="fname">langchain_prompt_template.ipynb</span>
+          <span class="badge badge-nb">nb</span>
+        </div>
+        <div class="tree-item">
+          <span class="icon">📄</span>
+          <span class="fname">requirements.txt</span>
+          <span class="badge badge-txt">pip</span>
+        </div>
+        <div class="tree-item">
+          <span class="icon">🔑</span>
+          <span class="fname">.env.example</span>
+          <span class="badge badge-env">env</span>
+        </div>
+        <div class="tree-item">
+          <span class="icon">📖</span>
+          <span class="fname">README.md</span>
+          <span class="badge badge-doc">doc</span>
+        </div>
+      </div>
+      <div class="sidebar-divider"></div>
+      <a class="download-btn" id="dlBtn" download="ai-engineering-post1.zip">
+        ⬇ Baixar projeto (.zip)
+      </a>
+      <a class="github-btn" href="https://github.com/uiliannunes/ai-engineering-series" target="_blank">
+        ⭐ Ver no GitHub
+      </a>
+      <div class="sidebar-meta">
+        <div class="meta-row"><span class="meta-label">Arquivos</span><span class="meta-val">4</span></div>
+        <div class="meta-row"><span class="meta-label">Células</span><span class="meta-val">15</span></div>
+        <div class="meta-row"><span class="meta-label">Python</span><span class="meta-val">3.10+</span></div>
+        <div class="meta-row"><span class="meta-label">LangChain</span><span class="meta-val">0.2.0</span></div>
+        <div class="meta-row"><span class="meta-label">LLM</span><span class="meta-val">llama-3.1-8b</span></div>
+        <div class="meta-row"><span class="meta-label">API</span><span class="meta-val"><a href="https://console.groq.com/keys" target="_blank">Groq (free)</a></span></div>
+        <div class="meta-row"><span class="meta-label">Autor</span><span class="meta-val"><a href="https://www.linkedin.com/in/uiliannunes/" target="_blank">Uilian Nunes</a></span></div>
+      </div>
     </div>
-    <div class="cell-body">
-      <div class="md-content">
+  </aside>
+
+  <main class="notebook">
+
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
         <h2>🤔 O que é LangChain?</h2>
-        <p><strong>LangChain</strong> é um framework Python que facilita a criação de aplicações com LLMs (Large Language Models), como GPT, Claude ou Gemini.</p>
-        <p>Em vez de montar chamadas de API na mão e gerenciar strings de prompt manualmente, o LangChain organiza tudo em <strong>blocos reutilizáveis e encadeáveis</strong>.</p>
+        <p><strong>LangChain</strong> é um framework Python que facilita a criação de aplicações com LLMs (Large Language Models), como GPT, Claude ou Llama.</p>
+        <p>Em vez de montar chamadas de API na mão, o LangChain organiza tudo em <strong>blocos reutilizáveis e encadeáveis</strong>.</p>
         <div class="comparison-box">
-          <div class="bad">❌ Sem LangChain: &nbsp;prompt (string) → chamada API → parse da resposta &nbsp;<span class="label">trabalhoso</span></div>
-          <br>
+          <div class="bad">❌ Sem LangChain: &nbsp;prompt (string) → chamada API → parse &nbsp;<span class="label">trabalhoso</span></div><br>
           <div class="good">✅ Com LangChain: &nbsp;PromptTemplate → LLM → OutputParser &nbsp;<span class="label">organizado</span></div>
         </div>
-      </div>
+      </div></div>
     </div>
-  </div>
 
-  <div class="divider"></div>
+    <div class="divider"></div>
 
-  <!-- Cell 2: Instalação (md) -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-    </div>
-    <div class="cell-body">
-      <div class="md-content">
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
         <h2>📦 Passo 1 — Instalação</h2>
-        <p>Instale as bibliotecas necessárias. O <code>langchain-openai</code> é o pacote de integração com os modelos da OpenAI.</p>
-      </div>
+        <p>Instale as bibliotecas necessárias. Usamos <code>langchain-groq</code> para conectar ao <strong>Groq</strong> — API gratuita com acesso a modelos open-source como Llama.</p>
+      </div></div>
     </div>
-  </div>
 
-  <!-- Cell 3: Instalação (code) -->
-  <div class="cell code">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-      <div class="cell-number">[1]</div>
+    <div class="cell code">
+      <div class="cell-gutter"><div class="cell-type-dot"></div><div class="cell-number">[1]</div></div>
+      <div class="cell-body"><div class="code-cell">
+        <div class="code-header"><span class="code-lang">bash</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+        <pre><code><span class="sh">!pip install -U langchain langchain-core langchain-groq --quiet</span></code></pre>
+      </div></div>
     </div>
-    <div class="cell-body">
-      <div class="code-cell">
-        <div class="code-header">
-          <span class="code-lang">bash</span>
-          <div class="code-dots"><span></span><span></span><span></span></div>
-        </div>
-        <pre><code><span class="sh">!pip install langchain langchain-openai --quiet</span></code></pre>
-      </div>
-    </div>
-  </div>
 
-  <div class="divider"></div>
+    <div class="divider"></div>
 
-  <!-- Cell 4: API Key (md) -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-    </div>
-    <div class="cell-body">
-      <div class="md-content">
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
         <h2>🔑 Passo 2 — Configurar a Chave de API</h2>
-        <p>Você precisa de uma chave da OpenAI. Crie a sua em: <strong>platform.openai.com/api-keys</strong></p>
-        <blockquote>⚠️ <strong>Nunca exponha sua chave em código público!</strong> Use variáveis de ambiente.</blockquote>
-      </div>
+        <p>Crie sua chave <strong>gratuitamente</strong> em <a href="https://console.groq.com/keys" target="_blank" style="color:var(--blue)">console.groq.com/keys</a> e configure via variável de ambiente.</p>
+        <blockquote>⚠️ <strong>Nunca exponha sua chave em código público!</strong> Use o arquivo <code>.env</code> incluído no projeto.</blockquote>
+      </div></div>
     </div>
-  </div>
 
-  <!-- Cell 5: API Key (code) -->
-  <div class="cell code">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-      <div class="cell-number">[2]</div>
-    </div>
-    <div class="cell-body">
-      <div class="code-cell">
-        <div class="code-header">
-          <span class="code-lang">python</span>
-          <div class="code-dots"><span></span><span></span><span></span></div>
-        </div>
-        <pre><code><span class="kw">import</span> os
+    <div class="cell code">
+      <div class="cell-gutter"><div class="cell-type-dot"></div><div class="cell-number">[2]</div></div>
+      <div class="cell-body">
+        <div class="code-cell">
+          <div class="code-header"><span class="code-lang">python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre><code><span class="kw">import</span> os
 
-<span class="cm"># Substitua pela sua chave — ou defina via variável de ambiente</span>
-os.<span class="fn">environ</span>[<span class="st">"OPENAI_API_KEY"</span>] = <span class="st">"sua-chave-aqui"</span>
+<span class="cm"># Substitua pela sua chave da Groq — ou defina via variável de ambiente</span>
+os.<span class="fn">environ</span>[<span class="st">"GROQ_API_KEY"</span>] = <span class="st">"sua-chave-groq-aqui"</span>
 
 <span class="fn">print</span>(<span class="st">"✅ Chave configurada com sucesso!"</span>)</code></pre>
+        </div>
+        <div class="output-cell">
+          <div class="out-label">output</div>
+          <pre><code>✅ Chave configurada com sucesso!</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="divider"></div>
+    <div class="divider"></div>
 
-  <!-- Cell 6: PromptTemplate (md) -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-    </div>
-    <div class="cell-body">
-      <div class="md-content">
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
         <h2>✍️ Passo 3 — Criando o PromptTemplate</h2>
         <p>O <code>PromptTemplate</code> permite criar prompts com <strong>variáveis dinâmicas</strong> usando <code>{nome_da_variavel}</code>.</p>
-        <p>Isso é muito útil quando você quer reutilizar o mesmo prompt com entradas diferentes.</p>
-      </div>
+      </div></div>
     </div>
-  </div>
 
-  <!-- Cell 7: PromptTemplate (code) -->
-  <div class="cell code">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-      <div class="cell-number">[3]</div>
-    </div>
-    <div class="cell-body">
-      <div class="code-cell">
-        <div class="code-header">
-          <span class="code-lang">python</span>
-          <div class="code-dots"><span></span><span></span><span></span></div>
-        </div>
-        <pre><code><span class="kw">from</span> langchain.prompts <span class="kw">import</span> <span class="cl">PromptTemplate</span>
+    <div class="cell code">
+      <div class="cell-gutter"><div class="cell-type-dot"></div><div class="cell-number">[3]</div></div>
+      <div class="cell-body">
+        <div class="code-cell">
+          <div class="code-header"><span class="code-lang">python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre><code><span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> <span class="cl">PromptTemplate</span>
 
-<span class="cm"># Definindo o template com uma variável {produto}</span>
 template = <span class="cl">PromptTemplate</span>(
     input_variables=[<span class="st">"produto"</span>],
     template=<span class="st">"Escreva um slogan criativo para o produto: {produto}"</span>
 )
 
-<span class="cm"># Visualizando o prompt formatado antes de enviar ao modelo</span>
 prompt_formatado = template.<span class="fn">format</span>(produto=<span class="st">"tênis esportivo"</span>)
 <span class="fn">print</span>(<span class="st">"📝 Prompt gerado:"</span>)
 <span class="fn">print</span>(prompt_formatado)</code></pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cell 8: Multi-var tip -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-    </div>
-    <div class="cell-body">
-      <div class="md-content">
-        <h3>💡 Dica: Templates com múltiplas variáveis</h3>
-        <p>Você pode ter quantas variáveis quiser no mesmo template:</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="cell code">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-      <div class="cell-number">[4]</div>
-    </div>
-    <div class="cell-body">
-      <div class="code-cell">
-        <div class="code-header">
-          <span class="code-lang">python</span>
-          <div class="code-dots"><span></span><span></span><span></span></div>
         </div>
-        <pre><code>template_avancado = <span class="cl">PromptTemplate</span>(
+        <div class="output-cell">
+          <div class="out-label">output</div>
+          <pre><code>📝 Prompt gerado:
+Escreva um slogan criativo para o produto: tênis esportivo</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
+        <h3>💡 Dica: Templates com múltiplas variáveis</h3>
+      </div></div>
+    </div>
+
+    <div class="cell code">
+      <div class="cell-gutter"><div class="cell-type-dot"></div><div class="cell-number">[4]</div></div>
+      <div class="cell-body">
+        <div class="code-cell">
+          <div class="code-header"><span class="code-lang">python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre><code>template_avancado = <span class="cl">PromptTemplate</span>(
     input_variables=[<span class="st">"produto"</span>, <span class="st">"publico"</span>, <span class="st">"tom"</span>],
     template=<span class="st">"""
 Você é um especialista em marketing.
@@ -616,93 +320,84 @@ Tom de comunicação: {tom}
     publico=<span class="st">"jovens entre 18 e 30 anos"</span>,
     tom=<span class="st">"energético e motivacional"</span>
 ))</code></pre>
+        </div>
+        <div class="output-cell">
+          <div class="out-label">output</div>
+          <pre><code>Você é um especialista em marketing.
+Crie um slogan para o produto: tênis esportivo
+Público-alvo: jovens entre 18 e 30 anos
+Tom de comunicação: energético e motivacional</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="divider"></div>
+    <div class="divider"></div>
 
-  <!-- Cell: LLM (md) -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-    </div>
-    <div class="cell-body">
-      <div class="md-content">
-        <h2>🤖 Passo 4 — Conectando ao Modelo e Executando</h2>
-        <p>Agora vamos conectar o template ao modelo GPT e criar nosso primeiro <strong>pipeline completo</strong>.</p>
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
+        <h2>🤖 Passo 4 — Conectando ao Modelo e Executando <span class="groq-badge">via Groq</span></h2>
+        <p>Conecte o template ao modelo <strong>Llama 3.1</strong> via Groq usando a sintaxe <strong>LCEL</strong> (LangChain Expression Language) com o operador <code>|</code>.</p>
         <div class="pipeline-flow">
           <span class="step">PromptTemplate</span>
+          <span class="arrow">|</span>
+          <span class="step">ChatGroq</span>
           <span class="arrow">→</span>
-          <span class="step">ChatOpenAI</span>
-          <span class="arrow">→</span>
-          <span class="step">Resposta</span>
+          <span class="step">response.content</span>
         </div>
-      </div>
+      </div></div>
     </div>
-  </div>
 
-  <!-- Cell: LLM (code) -->
-  <div class="cell code">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-      <div class="cell-number">[5]</div>
-    </div>
-    <div class="cell-body">
-      <div class="code-cell">
-        <div class="code-header">
-          <span class="code-lang">python</span>
-          <div class="code-dots"><span></span><span></span><span></span></div>
-        </div>
-        <pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> <span class="cl">ChatOpenAI</span>
-<span class="kw">from</span> langchain.chains <span class="kw">import</span> <span class="cl">LLMChain</span>
+    <div class="cell code">
+      <div class="cell-gutter"><div class="cell-type-dot"></div><div class="cell-number">[5]</div></div>
+      <div class="cell-body">
+        <div class="code-cell">
+          <div class="code-header"><span class="code-lang">python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre><code><span class="kw">from</span> langchain_groq <span class="kw">import</span> <span class="cl">ChatGroq</span>
+<span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> <span class="cl">PromptTemplate</span>
 
-<span class="cm"># Inicializa o modelo</span>
-llm = <span class="cl">ChatOpenAI</span>(
-    model=<span class="st">"gpt-4o-mini"</span>,  <span class="cm"># modelo mais econômico e eficiente</span>
-    temperature=<span class="nb">0.7</span>        <span class="cm"># 0 = determinístico | 1 = mais criativo</span>
+template = <span class="cl">PromptTemplate</span>.<span class="fn">from_template</span>(
+    <span class="st">"Crie uma descrição criativa para vender um {produto}"</span>
 )
 
-<span class="cm"># Conecta o template ao modelo em uma chain</span>
-chain = <span class="cl">LLMChain</span>(llm=llm, prompt=template)
+llm = <span class="cl">ChatGroq</span>(
+    model=<span class="st">"llama-3.1-8b-instant"</span>,
+    temperature=<span class="nb">0.7</span>
+)
 
-<span class="cm"># Executa o pipeline</span>
-resposta = chain.<span class="fn">invoke</span>({<span class="st">"produto"</span>: <span class="st">"tênis esportivo"</span>})
+<span class="cm"># Sintaxe LCEL: encadeia template e modelo com o operador |</span>
+chain = template <span class="op">|</span> llm
 
-<span class="fn">print</span>(<span class="st">"🎯 Resposta do modelo:"</span>)
-<span class="fn">print</span>(resposta[<span class="st">"text"</span>])</code></pre>
-      </div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- Cell: Loop (md) -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-    </div>
-    <div class="cell-body">
-      <div class="md-content">
-        <h2>🔄 Passo 5 — Testando com múltiplos inputs</h2>
-        <p>A reutilização é uma das grandes vantagens do PromptTemplate. Veja como gerar slogans para vários produtos com o mesmo pipeline:</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cell: Loop (code) -->
-  <div class="cell code">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-      <div class="cell-number">[6]</div>
-    </div>
-    <div class="cell-body">
-      <div class="code-cell">
-        <div class="code-header">
-          <span class="code-lang">python</span>
-          <div class="code-dots"><span></span><span></span><span></span></div>
+response = chain.<span class="fn">invoke</span>({<span class="st">"produto"</span>: <span class="st">"tênis esportivo"</span>})
+<span class="fn">print</span>(response.content)</code></pre>
         </div>
-        <pre><code>produtos = [
+        <div class="output-cell">
+          <div class="out-label">output</div>
+          <pre><code>**Desbloqueie o seu potencial com o "Thunderbolt"!**
+
+Você está pronto para dar um salto para o topo? Com o "Thunderbolt",
+o seu tênis esportivo mais potente, você estará preparado para
+enfrentar qualquer desafio que vier sua maneira...</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
+        <h2>🔄 Passo 5 — Testando com múltiplos inputs</h2>
+        <p>Veja como gerar descrições para vários produtos com o mesmo pipeline:</p>
+      </div></div>
+    </div>
+
+    <div class="cell code">
+      <div class="cell-gutter"><div class="cell-type-dot"></div><div class="cell-number">[6]</div></div>
+      <div class="cell-body">
+        <div class="code-cell">
+          <div class="code-header"><span class="code-lang">python</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+          <pre><code>produtos = [
     <span class="st">"notebook gamer"</span>,
     <span class="st">"café especial artesanal"</span>,
     <span class="st">"aplicativo de meditação"</span>
@@ -712,62 +407,73 @@ resposta = chain.<span class="fn">invoke</span>({<span class="st">"produto"</spa
 <span class="kw">for</span> produto <span class="kw">in</span> produtos:
     resposta = chain.<span class="fn">invoke</span>({<span class="st">"produto"</span>: produto})
     <span class="fn">print</span>(<span class="nb">f</span><span class="st">"📦 {produto.upper()}"</span>)
-    <span class="fn">print</span>(<span class="nb">f</span><span class="st">"   → {resposta['text'].strip()}"</span>)
+    <span class="fn">print</span>(<span class="nb">f</span><span class="st">"  → {resposta.content.strip()}"</span>)  <span class="cm"># .content em vez de ['text']</span>
     <span class="fn">print</span>()</code></pre>
+        </div>
+        <div class="output-cell">
+          <div class="out-label">output</div>
+          <pre><code>🚀 Gerando slogans...
+
+📦 NOTEBOOK GAMER
+  → "Prepare-se para mergulhar em um mundo de adrenalina..."
+
+📦 CAFÉ ESPECIAL ARTESANAL
+  → **"Despertar ao Sabor da Pureza"**...
+
+📦 APLICATIVO DE MEDITAÇÃO
+  → **Encontre a Paz Interior com "Serenidade em Movimento"**...</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="divider"></div>
+    <div class="divider"></div>
 
-  <!-- Summary -->
-  <div class="cell md">
-    <div class="cell-gutter">
-      <div class="cell-type-dot"></div>
-    </div>
-    <div class="cell-body">
-      <div class="md-content">
+    <div class="cell md">
+      <div class="cell-gutter"><div class="cell-type-dot"></div></div>
+      <div class="cell-body"><div class="md-content">
         <h2>✅ Resumo do que você aprendeu</h2>
         <table class="summary-table">
-          <thead>
-            <tr>
-              <th>Conceito</th>
-              <th>O que é</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Conceito</th><th>O que é</th></tr></thead>
           <tbody>
-            <tr>
-              <td>PromptTemplate</td>
-              <td>Cria prompts dinâmicos com variáveis reutilizáveis</td>
-            </tr>
-            <tr>
-              <td>ChatOpenAI</td>
-              <td>Conector para os modelos GPT da OpenAI</td>
-            </tr>
-            <tr>
-              <td>LLMChain</td>
-              <td>Encadeia um template + modelo em um pipeline</td>
-            </tr>
-            <tr>
-              <td>chain.invoke()</td>
-              <td>Executa o pipeline com os inputs fornecidos</td>
-            </tr>
+            <tr><td>PromptTemplate</td><td>Cria prompts dinâmicos com variáveis reutilizáveis</td></tr>
+            <tr><td>ChatGroq</td><td>Conector para modelos Groq (Llama, Mixtral etc) — gratuito</td></tr>
+            <tr><td>template | llm</td><td>Sintaxe LCEL para encadear template + modelo em um pipeline</td></tr>
+            <tr><td>chain.invoke()</td><td>Executa o pipeline com os inputs fornecidos</td></tr>
+            <tr><td>response.content</td><td>Acessa o texto da resposta no formato LCEL</td></tr>
           </tbody>
         </table>
+      </div></div>
+    </div>
+
+    <div class="next-card">
+      <div class="next-card-text">
+        <h3>🚀 Próximo post da série</h3>
+        <p>Sequential Chains — encadeie múltiplos prompts onde a saída de um vira a entrada do próximo.</p>
+      </div>
+      <div class="next-badge">POST #2 EM BREVE</div>
+    </div>
+
+    <div class="author-footer">
+      <div class="author-avatar">👤</div>
+      <div class="author-info">
+        <div class="author-name">Uilian Nunes</div>
+        <p>Série: Engenharia de IA &nbsp;·&nbsp;
+          <a href="https://www.linkedin.com/in/uiliannunes/" target="_blank">LinkedIn</a> &nbsp;·&nbsp;
+          <a href="https://github.com/uiliannunes/ai-engineering-series" target="_blank">GitHub</a>
+        </p>
       </div>
     </div>
-  </div>
 
-  <!-- Next post CTA -->
-  <div class="next-card">
-    <div class="next-card-text">
-      <h3>🚀 Próximo post da série</h3>
-      <p>Sequential Chains — encadeie múltiplos prompts onde a saída de um vira a entrada do próximo.</p>
-    </div>
-    <div class="next-badge">POST #2 EM BREVE</div>
-  </div>
-
+  </main>
 </div>
 
+<script>
+  const b64 = "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";
+  const byteChars = atob(b64);
+  const byteArr = new Uint8Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+  const blob = new Blob([byteArr], { type: 'application/zip' });
+  document.getElementById('dlBtn').href = URL.createObjectURL(blob);
+</script>
 </body>
 </html>
